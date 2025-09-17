@@ -1,2 +1,283 @@
 # Website-personal
 Web
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rekomendasi Bioskop & Film Horror</title>
+<style>
+  :root{--bg:#0f1724;--card:#0d1620;--accent:#e91e63;--muted:#9aa4b2;--text:#e6eef6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#06101a,#081426);color:var(--text);padding:18px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:20px;margin:0}
+  h2{margin:20px 0 10px;color:var(--accent)}
+  .controls{display:flex;gap:12px;flex-wrap:wrap}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+  .panel{display:grid;grid-template-columns:1fr 320px;gap:16px}
+  .form-row{margin-bottom:10px}
+  input,select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button{padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:white;cursor:pointer}
+  .results{margin-top:12px;display:grid;gap:12px}
+  .cinema{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+  .cinema .info{flex:1}
+  .meta{color:var(--muted);font-size:13px}
+  .tags{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .small{padding:6px 8px;font-size:13px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);cursor:pointer}
+  .fav{background:transparent;border:0;color:#ffcc00;font-weight:700;cursor:pointer}
+  footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+
+  /* Film Section */
+  .film-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:12px}
+  .film-card{background:#0d1620;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);box-shadow:0 0 8px rgba(0,0,0,0.4)}
+  .film-card img{width:100%;height:280px;object-fit:cover}
+  .film-card .content{padding:10px}
+  .film-card h3{margin:0 0 6px;color:var(--accent)}
+  .film-card p{font-size:13px;color:var(--muted);margin:0 0 8px}
+  .film-card iframe{width:100%;height:160px;border:0}
+  @media(max-width:900px){.panel{grid-template-columns:1fr} .controls{flex-direction:column}}
+  body {
+  margin:0;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  background:linear-gradient(180deg, #ffb6c1, #ff69b4, #ff1493); /* gradasi pink muda → hot pink → deep pink */
+  color:var(--text);
+  padding:18px
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <h1>🎬 Rekomendasi Bioskop & Film Horror</h1>
+    <div class="controls">
+      <button id="locBtn" class="small">Gunakan Lokasi Saya</button>
+      <button id="resetBtn" class="small">Reset Preferensi</button>
+    </div>
+  </header>
+
+  <!-- Panel Bioskop -->
+  <div class="panel">
+    <div class="card">
+      <h3>Atur Preferensi Bioskop</h3>
+      <div class="form-row">
+        <label for="genre">Genre favorit</label>
+        <select id="genre">
+          <option value="any">Semua</option>
+          <option>Action</option>
+          <option>Drama</option>
+          <option>Romance</option>
+          <option>Horror</option>
+          <option>Comedy</option>
+          <option>Documentary</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="maxPrice">Harga maksimum (Rp)</label>
+        <input id="maxPrice" type="number" placeholder="contoh: 50000">
+      </div>
+
+      <div class="form-row">
+        <label for="minRating">Rating minimum</label>
+        <select id="minRating">
+          <option value="0">Semua</option>
+          <option value="6">≥ 6</option>
+          <option value="7">≥ 7</option>
+          <option value="8">≥ 8</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="radiusKm">Radius pencarian (km)</label>
+        <input id="radiusKm" type="number" placeholder="mis. 15" value="20">
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="applyBtn">Cari Rekomendasi</button>
+        <button id="clearFav" class="small">Hapus Favorit</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <h3>Hasil Rekomendasi Bioskop</h3>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;color:var(--muted)">
+          <div id="userLocText">Lokasi: belum tersedia</div>
+          <div style="flex:1"></div>
+          <div id="countText"></div>
+        </div>
+      </div>
+      <div id="results" class="results"></div>
+    </div>
+  </div>
+
+  <!-- Panel Film Horror -->
+  <h2>🔥 Rekomendasi Film Horror</h2>
+  <div id="filmList" class="film-grid"></div>
+
+  <footer>© BioSkoop Recommender + Horror Films — contoh aplikasi</footer>
+
+<script>
+/* =========================
+   Data bioskop (sample)
+   ========================= */
+const cinemas = [
+  {id:'c1',name:'CGV Grand Indonesia',lat:-6.1950,lon:106.8214,avgPrice:60000,rating:8.3,genres:['Action','Drama','Comedy'],open:true},
+  {id:'c2',name:'XXI Kota Kasablanka',lat:-6.2215,lon:106.8429,avgPrice:55000,rating:7.8,genres:['Romance','Drama','Comedy'],open:true},
+  {id:'c3',name:'Cinemaxx Bandung',lat:-6.9175,lon:107.6191,avgPrice:45000,rating:7.2,genres:['Action','Horror','Comedy'],open:true},
+  {id:'c4',name:'XXI Surabaya Town Square',lat:-7.2654,lon:112.7420,avgPrice:50000,rating:7.6,genres:['Action','Documentary','Drama'],open:false},
+  {id:'c5',name:'IndoCinema Mall Central',lat:-6.1741,lon:106.8296,avgPrice:40000,rating:6.9,genres:['Horror','Drama','Romance'],open:true}
+];
+
+/* =========================
+   Data Film Horror
+   ========================= */
+const films = [
+  {
+    title:"The Conjuring: The Devil Made Me Do It",
+    desc:"Kasus pengadilan pertama di AS dengan pembelaan kerasukan setan.",
+    img:"https://image.tmdb.org/t/p/w500/xbSuFiJbbBWCkyCCKIMfuDCA4yV.jpg",
+    trailer:"https://www.youtube.com/embed/h9Q4zZS2v1k"
+  },
+  {
+    title:"Insidious: The Red Door",
+    desc:"Keluarga Lambert kembali menghadapi roh-roh jahat dari dunia lain.",
+    img:"https://image.tmdb.org/t/p/w500/d07xtqwq1uriQ1hda6qeu8Skt5m.jpg",
+    trailer:"https://www.youtube.com/embed/ZuQuOnYnr3Q"
+  },
+  {
+    title:"Annabelle Comes Home",
+    desc:"Boneka terkutuk Annabelle membangkitkan roh-roh jahat lainnya.",
+    img:"https://image.tmdb.org/t/p/w500/qWsHMrbg9DsBY3bCMk9jyYCRVRs.jpg",
+    trailer:"https://www.youtube.com/embed/bCxm7cTpBAs"
+  },
+  {
+    title:"Hereditary",
+    desc:"Rahasia kelam keluarga diwariskan dari generasi ke generasi.",
+    img:"https://image.tmdb.org/t/p/w500/lHV8HHlhwNup2VbpiACtlKzaGIQ.jpg",
+    trailer:"https://www.youtube.com/embed/V6wWKNij_1M"
+  },
+  {
+    title:"A Quiet Place",
+    desc:"Keluarga harus hidup dalam keheningan agar selamat dari makhluk peka suara.",
+    img:"https://image.tmdb.org/t/p/w500/nAU74GmpUk7t5iklEp3bufwDq4n.jpg",
+    trailer:"https://www.youtube.com/embed/WR7cc5t7tv8"
+  }
+];
+
+/* =========================
+   Utilities
+   ========================= */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; const toRad=v=>v*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* =========================
+   State
+   ========================= */
+let userLoc=null;
+const favKey='fav_cinemas_v1';
+let favorites=JSON.parse(localStorage.getItem(favKey)||'[]');
+
+/* =========================
+   DOM refs
+   ========================= */
+const locBtn=document.getElementById('locBtn');
+const applyBtn=document.getElementById('applyBtn');
+const resetBtn=document.getElementById('resetBtn');
+const resultsEl=document.getElementById('results');
+const userLocText=document.getElementById('userLocText');
+const countText=document.getElementById('countText');
+const genreEl=document.getElementById('genre');
+const maxPriceEl=document.getElementById('maxPrice');
+const minRatingEl=document.getElementById('minRating');
+const radiusEl=document.getElementById('radiusKm');
+const sortByEl=document.createElement('select');
+const onlyOpenEl=document.createElement('select');
+const clearFavBtn=document.getElementById('clearFav');
+
+/* =========================
+   Geolocation
+   ========================= */
+locBtn.onclick=()=>{
+  if(!navigator.geolocation)return alert('Geolocation tidak tersedia.');
+  locBtn.textContent='Mencari lokasi...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLoc={lat:pos.coords.latitude,lon:pos.coords.longitude};
+    userLocText.textContent=`Lokasi: ${userLoc.lat.toFixed(4)}, ${userLoc.lon.toFixed(4)}`;
+    locBtn.textContent='Perbarui Lokasi Saya';
+  },err=>{
+    locBtn.textContent='Gunakan Lokasi Saya';
+    alert('Gagal mendapatkan lokasi: '+err.message);
+  });
+};
+
+/* =========================
+   Score & filter
+   ========================= */
+function scoreCinema(cinema,prefs){
+  let genreScore=prefs.genre==='any'?1:(cinema.genres.includes(prefs.genre)?1:0.2);
+  let ratingScore=Math.max(0,Math.min(1,cinema.rating/10));
+  let distance=userLoc?haversineKm(userLoc.lat,userLoc.lon,cinema.lat,cinema.lon):10;
+  let r=Math.max(1,prefs.radiusKm||20);
+  let distanceScore=1-Math.min(distance,r)/r; distanceScore=Math.max(0.2,distanceScore);
+  let maxPrice=prefs.maxPrice||100000;
+  let priceScore=1-Math.min(cinema.avgPrice,maxPrice)/Math.max(maxPrice,cinema.avgPrice);
+  priceScore=(priceScore+1)/2; priceScore=Math.max(0.2,Math.min(1,priceScore));
+  return {score:genreScore*0.35+ratingScore*0.30+distanceScore*0.25+priceScore*0.10,distanceKm:distance};
+}
+
+function applyPreferences(){
+  const prefs={genre:genreEl.value,maxPrice:parseInt(maxPriceEl.value)||null,minRating:parseFloat(minRatingEl.value)||0,radiusKm:parseFloat(radiusEl.value)||20};
+  let candidates=cinemas.map(c=>({...c,...scoreCinema(c,prefs)}));
+  candidates=candidates.filter(c=>{
+    if(prefs.maxPrice&&c.avgPrice>prefs.maxPrice)return false;
+    if(c.rating<prefs.minRating)return false;
+    return true;
+  });
+  candidates.sort((a,b)=>b.score-a.score);
+  renderResults(candidates);
+}
+
+/* =========================
+   Render Bioskop
+   ========================= */
+function renderResults(list){
+  resultsEl.innerHTML='';
+  if(list.length===0){resultsEl.innerHTML='<div class="card">Tidak ada bioskop cocok</div>';countText.textContent='';return;}
+  countText.textContent=`${list.length} hasil`;
+  list.forEach(item=>{
+    const div=document.createElement('div');div.className='cinema card';
+    div.innerHTML=`<div class="info"><strong>${item.name}</strong> <span class="meta">• ${item.rating}★</span>
+      <div class="meta">Rp ${item.avgPrice.toLocaleString()} • ${item.distanceKm?item.distanceKm.toFixed(1)+' km':'-'}</div>
+      <div class="meta">${item.genres.join(', ')}</div></div>`;
+    resultsEl.appendChild(div);
+  });
+}
+
+/* =========================
+   Render Film Horror
+   ========================= */
+const filmList=document.getElementById('filmList');
+films.forEach(f=>{
+  const card=document.createElement('div');card.className='film-card';
+  card.innerHTML=`<img src="${f.img}" alt="${f.title}">
+    <div class="content"><h3>${f.title}</h3><p>${f.desc}</p>
+    <iframe src="${f.trailer}" allowfullscreen></iframe></div>`;
+  filmList.appendChild(card);
+});
+
+/* =========================
+   Init
+   ========================= */
+applyBtn.onclick=applyPreferences;
+resetBtn.onclick=()=>{genreEl.value='any';maxPriceEl.value='';minRatingEl.value='0';radiusEl.value=20;resultsEl.innerHTML='';countText.textContent='';};
+renderResults(cinemas);
+</script>
+</body>
+</html>
